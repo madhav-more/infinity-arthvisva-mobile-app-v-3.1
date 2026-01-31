@@ -30,4 +30,27 @@ export const DashboardService = {
         const response = await api.get("/api/dashboard/all-client-detail");
         return response.data;
     },
+
+    // 🔹 Create Detailed Lead
+    createLead: async (payload) => {
+        const response = await api.post("/api/dashboard/create-detail-lead", payload);
+        return response.data;
+    },
+
+    // 🔹 Get Lead Documents
+    getLeadDocuments: async (leadId) => {
+        const response = await api.get(`/api/dashboard/detail-lead/${leadId}/all-documents`);
+        return response.data;
+    },
+
+    // 🔹 Upload Lead Document
+    uploadLeadDocument: async (leadId, formData) => {
+        const encodedId = encodeURIComponent(leadId);
+        const response = await api.post(`/api/dashboard/detail-leads/${encodedId}/documents`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    },
 };

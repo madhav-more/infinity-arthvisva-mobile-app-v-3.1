@@ -27,6 +27,20 @@ export default function AddDetailedLeadScreen() {
         { id: 'unlisted', name: 'Unlisted' },
     ];
 
+    const handleNavigation = (title) => {
+        const routes = {
+            "Home Loans": "HomeLoanForm",
+            "Personal Loans": "PersonalLoanForm"
+        };
+        const route = routes[title];
+        if (route) {
+            navigation.navigate(route);
+        } else {
+            console.log("No route for", title);
+            // Optional: Alert.alert("Coming Soon", "This form is under development.");
+        }
+    };
+
     const renderProductCard = ({ item }) => (
         <View style={styles.card}>
             <Text style={styles.cardTitle}>{item.title}</Text>
@@ -43,7 +57,8 @@ export default function AddDetailedLeadScreen() {
                 </View>
             </View>
 
-            <TouchableOpacity style={styles.actionButton} onPress={() => { /* Placeholder */ }}>
+            <TouchableOpacity style={styles.actionButton} onPress={() => handleNavigation(item.title)}>
+                <Ionicons name="add-circle-outline" size={18} color="white" style={{ marginRight: 6 }} />
                 <Text style={styles.actionButtonText}>Click to Add New</Text>
             </TouchableOpacity>
         </View>
@@ -62,9 +77,9 @@ export default function AddDetailedLeadScreen() {
                 >
                     <Ionicons name="arrow-back" size={16} color={theme.colors.textSecondary} />
                     <Text style={styles.backButtonText}>Back to All Leads</Text>
-                    
+
                 </TouchableOpacity>
-                
+
             </View>
 
             <View style={styles.tabContainer}>

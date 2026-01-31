@@ -25,6 +25,8 @@ import LeadManagementScreen from '../screens/dashboard/referral/LeadManagementSc
 import AddDetailedLeadScreen from '../screens/dashboard/detailed/AddDetailedLeadScreen';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import ClientPortfolioScreen from '../screens/dashboard/clientPortfolio/ClientPortfolioScreen';
+import HomeLoanFormScreen from '../screens/dashboard/detailed/forms/HomeLoanFormScreen';
+import PersonalLoanFormScreen from '../screens/dashboard/detailed/forms/PersonalLoanFormScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -143,6 +145,24 @@ const DrawerNavigator = () => {
                 component={AddDetailedLeadScreen}
                 options={{
                     title: 'Add Detailed Lead',
+                    headerShown: false,
+                    drawerItemStyle: { display: 'none' }
+                }}
+            />
+            <Drawer.Screen
+                name="HomeLoanForm"
+                component={HomeLoanFormScreen}
+                options={{
+                    title: 'Home Loan Application',
+                    headerShown: false,
+                    drawerItemStyle: { display: 'none' }
+                }}
+            />
+            <Drawer.Screen
+                name="PersonalLoanForm"
+                component={PersonalLoanFormScreen}
+                options={{
+                    title: 'Personal Loan Application',
                     headerShown: false,
                     drawerItemStyle: { display: 'none' }
                 }}

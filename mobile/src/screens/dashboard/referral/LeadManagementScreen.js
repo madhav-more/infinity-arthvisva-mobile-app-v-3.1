@@ -17,6 +17,8 @@ import { DashboardService } from '../../../services/dashboardService';
 import ReferralLeadModal from './ReferralLeadModal';
 import { useFocusEffect } from '@react-navigation/native';
 import theme from '../../../constants/theme';
+import LeadFormDataModal from './LeadFormDataModal';
+import LeadDocumentsModal from './LeadDocumentsModal';
 
 export default function LeadManagementScreen({ navigation }) {
     const [activeTab, setActiveTab] = useState('referral'); // 'referral' or 'detailed'
@@ -26,6 +28,14 @@ export default function LeadManagementScreen({ navigation }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [pageSize, setPageSize] = useState(10);
     const [isModalVisible, setIsModalVisible] = useState(false);
+
+    // Docs Modal
+    const [selectedLeadForDocs, setSelectedLeadForDocs] = useState(null);
+    const [isDocsModalVisible, setIsDocsModalVisible] = useState(false);
+
+    // Form Data Modal
+    const [selectedLeadForForm, setSelectedLeadForForm] = useState(null);
+    const [isFormModalVisible, setIsFormModalVisible] = useState(false);
 
     const pageSizeOptions = [5, 10, 15, 20];
 
@@ -40,7 +50,26 @@ export default function LeadManagementScreen({ navigation }) {
                     setLeads([]);
                 }
             } else {
-                setLeads([]);
+                const response = await DashboardService.getMyLeads();
+                if (response.success && Array.isArray(response.data)) {
+                    // Map Detailed Leads
+                    const mapped = response.data.map(item => ({
+                        id: item.id,
+                        ref_id: item.detail_lead_id,
+                        lead_name: item.form_data?.clientName || item.client?.name || item.name || "N/A",
+                        contact_number: item.form_data?.phone || item.client?.mobile || item.mobile || "N/A",
+                        email: item.form_data?.email || item.client?.email || item.email || "-",
+                        department: item.department,
+                        sub_category: item.sub_category,
+                        is_self_login: item.meta?.is_self_login ? "Yes" : "No", // Explicit "Yes"/"No"
+                        notes: item.meta?.is_self_login ? "Self Login" : "-", // Keep notes for generic usage if needed
+                        created_at: item.created_at,
+                        original: item
+                    }));
+                    setLeads(mapped);
+                } else {
+                    setLeads([]);
+                }
             }
         } catch (error) {
             console.error("Failed to fetch leads", error);
@@ -61,6 +90,16 @@ export default function LeadManagementScreen({ navigation }) {
         fetchLeads(false);
     };
 
+    const handleViewDocs = (lead) => {
+        setSelectedLeadForDocs(lead);
+        setIsDocsModalVisible(true);
+    };
+
+    const handleViewForm = (lead) => {
+        setSelectedLeadForForm(lead);
+        setIsFormModalVisible(true);
+    };
+
     const filteredLeads = leads.filter(lead => {
         const query = searchQuery.toLowerCase();
         return (
@@ -68,17 +107,25 @@ export default function LeadManagementScreen({ navigation }) {
             (lead.ref_id && lead.ref_id.toLowerCase().includes(query)) ||
             (lead.contact_number && lead.contact_number.includes(query)) ||
             (lead.department && lead.department.toLowerCase().includes(query)) ||
-            (lead.sub_category && lead.sub_category.toLowerCase().includes(query))
+            (lead.sub_category && lead.sub_category.toLowerCase().includes(query)) ||
+            (lead.email && lead.email.toLowerCase().includes(query))
         );
     }).slice(0, pageSize);
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const d = date.getDate().toString().padStart(2, '0');
+        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+        const y = date.getFullYear();
+        const h = date.getHours().toString().padStart(2, '0');
+        const min = date.getMinutes().toString().padStart(2, '0');
+        const s = date.getSeconds().toString().padStart(2, '0');
+        return `${d}/${m}/${y}\n${h}:${min}:${s}`;
     };
 
-    const ListHeader = () => (
+    // --- REFERRAL LEADS COMPONENTS ---
+    const ReferralListHeader = () => (
         <View style={styles.headerRow}>
             <Text style={[styles.headerCell, styles.idCol]}>ID</Text>
             <Text style={[styles.headerCell, styles.refIdCol]}>Ref ID</Text>
@@ -91,7 +138,7 @@ export default function LeadManagementScreen({ navigation }) {
         </View>
     );
 
-    const renderLeadItem = ({ item, index }) => (
+    const renderReferralItem = ({ item, index }) => (
         <View style={[styles.row, index % 2 === 1 && { backgroundColor: theme.colors.rowAlternate }]}>
             <Text style={[styles.cell, styles.idCol]}>{item.id}</Text>
             <Text style={[styles.cell, styles.refIdCol, styles.boldText]}>{item.ref_id}</Text>
@@ -100,6 +147,47 @@ export default function LeadManagementScreen({ navigation }) {
             <Text style={[styles.cell, styles.deptCol]}>{item.department}</Text>
             <Text style={[styles.cell, styles.productCol]} numberOfLines={1}>{item.sub_category || '-'}</Text>
             <Text style={[styles.cell, styles.notesCol]} numberOfLines={1}>{item.notes || '-'}</Text>
+            <Text style={[styles.cell, styles.dateCol]}>{formatDate(item.created_at)}</Text>
+        </View>
+    );
+
+    // --- DETAILED LEADS COMPONENTS ---
+    // Columns: ID, Lead ID, Lead Name, Contact, Email, Dept, Sub Category, Self Login, Actions, Created
+    const DetailedListHeader = () => (
+        <View style={styles.headerRow}>
+            <Text style={[styles.headerCell, styles.idCol]}>ID</Text>
+            <Text style={[styles.headerCell, styles.refIdCol]}>Lead ID</Text>
+            <Text style={[styles.headerCell, styles.clientCol]}>Lead Name</Text>
+            <Text style={[styles.headerCell, styles.contactCol]}>Contact</Text>
+            <Text style={[styles.headerCell, styles.emailCol]}>Email</Text>
+            <Text style={[styles.headerCell, styles.deptCol]}>Dept</Text>
+            <Text style={[styles.headerCell, styles.productCol]}>Sub Category</Text>
+            <Text style={[styles.headerCell, styles.selfLoginCol]}>Self Login</Text>
+            <Text style={[styles.headerCell, styles.actionCol]}>Actions</Text>
+            <Text style={[styles.headerCell, styles.dateCol]}>Created</Text>
+        </View>
+    );
+
+    const renderDetailedItem = ({ item, index }) => (
+        <View style={[styles.row, index % 2 === 1 && { backgroundColor: theme.colors.rowAlternate }]}>
+            <Text style={[styles.cell, styles.idCol]}>{item.id}</Text>
+            <Text style={[styles.cell, styles.refIdCol, styles.boldText]}>{item.ref_id}</Text>
+            <Text style={[styles.cell, styles.clientCol]} numberOfLines={1}>{item.lead_name}</Text>
+            <Text style={[styles.cell, styles.contactCol]}>{item.contact_number}</Text>
+            <Text style={[styles.cell, styles.emailCol]} numberOfLines={1}>{item.email}</Text>
+            <Text style={[styles.cell, styles.deptCol]}>{item.department}</Text>
+            <Text style={[styles.cell, styles.productCol]} numberOfLines={1}>{item.sub_category || '-'}</Text>
+            <Text style={[styles.cell, styles.selfLoginCol]}>{item.is_self_login}</Text>
+
+            <View style={[styles.cell, styles.actionCol]}>
+                <TouchableOpacity style={[styles.docsBtn, styles.viewDocsBtn]} onPress={() => handleViewDocs(item)}>
+                    <Text style={[styles.docsBtnText, { color: '#2563EB' }]}>VIEW DOCS</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.docsBtn, styles.viewFormBtn]} onPress={() => handleViewForm(item)}>
+                    <Text style={[styles.docsBtnText, { color: '#475569' }]}>VIEW FORM</Text>
+                </TouchableOpacity>
+            </View>
+
             <Text style={[styles.cell, styles.dateCol]}>{formatDate(item.created_at)}</Text>
         </View>
     );
@@ -113,7 +201,7 @@ export default function LeadManagementScreen({ navigation }) {
                 }
             >
                 <View style={styles.mainContent}>
-                    {/* Header */}
+
                     <View style={styles.pageHeader}>
                         <Text style={styles.title}>Lead Management</Text>
                         <Text style={styles.subtitle}>
@@ -164,7 +252,9 @@ export default function LeadManagementScreen({ navigation }) {
                                 Detailed Leads
                             </Text>
                             <View style={[styles.countBadge, activeTab === 'detailed' ? styles.activeCountBadge : styles.inactiveCountBadge]}>
-                                <Text style={[styles.countText, activeTab === 'detailed' ? styles.activeCountText : styles.inactiveCountText]}>0</Text>
+                                <Text style={[styles.countText, activeTab === 'detailed' ? styles.activeCountText : styles.inactiveCountText]}>
+                                    {activeTab === 'detailed' ? leads.length : '0'}
+                                </Text>
                             </View>
                         </TouchableOpacity>
                     </View>
@@ -201,7 +291,7 @@ export default function LeadManagementScreen({ navigation }) {
 
                     {/* Scrollable Table Content */}
                     <View style={styles.tableCard}>
-                        <Text style={styles.sectionHeading}>Manage Leads</Text>
+                        <Text style={styles.sectionHeading}>{activeTab === 'referral' ? 'Referral Leads' : 'Detailed Leads'}</Text>
                         {loading && !refreshing ? (
                             <ActivityIndicator size="large" color={theme.colors.brandBlue} style={{ padding: 40 }} />
                         ) : (
@@ -210,16 +300,16 @@ export default function LeadManagementScreen({ navigation }) {
                                     <FlatList
                                         data={filteredLeads}
                                         keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
-                                        ListHeaderComponent={ListHeader}
+                                        ListHeaderComponent={activeTab === 'referral' ? ReferralListHeader : DetailedListHeader}
                                         stickyHeaderIndices={[0]}
-                                        renderItem={renderLeadItem}
+                                        renderItem={activeTab === 'referral' ? renderReferralItem : renderDetailedItem}
                                         ListEmptyComponent={() => (
                                             <View style={styles.emptyState}>
                                                 <Text style={styles.emptyText}>No leads found</Text>
                                             </View>
                                         )}
                                         contentContainerStyle={{ paddingBottom: 20 }}
-                                        scrollEnabled={false} // Disable vertical scroll on FlatList as it's inside outer ScrollView
+                                        scrollEnabled={false}
                                     />
                                 </ScrollView>
                             </View>
@@ -232,6 +322,18 @@ export default function LeadManagementScreen({ navigation }) {
                 visible={isModalVisible}
                 onClose={() => setIsModalVisible(false)}
                 onSuccess={() => fetchLeads(false)}
+            />
+
+            <LeadDocumentsModal
+                visible={isDocsModalVisible}
+                onClose={() => setIsDocsModalVisible(false)}
+                lead={selectedLeadForDocs}
+            />
+
+            <LeadFormDataModal
+                visible={isFormModalVisible}
+                onClose={() => setIsFormModalVisible(false)}
+                lead={selectedLeadForForm}
             />
         </SafeAreaView>
     );
@@ -455,9 +557,12 @@ const styles = StyleSheet.create({
     refIdCol: { width: 120 },
     clientCol: { width: 160 },
     contactCol: { width: 140 },
+    emailCol: { width: 180 }, // NEW
     deptCol: { width: 110 },
-    productCol: { width: 160 },
-    notesCol: { width: 220 },
+    productCol: { width: 160 }, // Also used for Sub Category
+    notesCol: { width: 220 }, // Generic notes for referral
+    selfLoginCol: { width: 100 }, // NEW: Self Login
+    actionCol: { width: 100, alignItems: 'center', justifyContent: 'center' },
     dateCol: { width: 120 },
 
     emptyState: {
@@ -470,5 +575,30 @@ const styles = StyleSheet.create({
         color: theme.colors.textSecondary,
         fontSize: 15,
         fontWeight: '500',
+    },
+
+    docsBtn: {
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        borderRadius: 4,
+        marginBottom: 6,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1
+    },
+    viewDocsBtn: {
+        backgroundColor: '#EFF6FF', // Light blue bg
+        borderColor: '#BFDBFE'
+    },
+    viewFormBtn: {
+        backgroundColor: '#F8FAFC', // Light gray bg
+        borderColor: '#E2E8F0',
+        marginBottom: 0
+    },
+    docsBtnText: {
+        fontSize: 10,
+        fontWeight: '800',
+        textTransform: 'uppercase'
     },
 });
