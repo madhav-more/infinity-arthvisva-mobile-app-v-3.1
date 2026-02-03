@@ -27,6 +27,13 @@ import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import ClientPortfolioScreen from '../screens/dashboard/clientPortfolio/ClientPortfolioScreen';
 import HomeLoanFormScreen from '../screens/dashboard/detailed/forms/HomeLoanFormScreen';
 import PersonalLoanFormScreen from '../screens/dashboard/detailed/forms/PersonalLoanFormScreen';
+import BusinessLoanFormScreen from '../screens/dashboard/detailed/forms/BusinessLoanFormScreen';
+import EducationLoanFormScreen from '../screens/dashboard/detailed/forms/EducationLoanFormScreen';
+import MortgageLoanFormScreen from '../screens/dashboard/detailed/forms/MortgageLoanFormScreen';
+import SMELoanFormScreen from '../screens/dashboard/detailed/forms/SMELoanFormScreen';
+import NRPLoanFormScreen from '../screens/dashboard/detailed/forms/NRPLoanFormScreen';
+import VehicleLoanFormScreen from '../screens/dashboard/detailed/forms/VehicleLoanFormScreen';
+import LoanAgainstSecuritiesFormScreen from '../screens/dashboard/detailed/forms/LoanAgainstSecuritiesFormScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -163,6 +170,69 @@ const DrawerNavigator = () => {
                 component={PersonalLoanFormScreen}
                 options={{
                     title: 'Personal Loan Application',
+                    headerShown: false,
+                    drawerItemStyle: { display: 'none' }
+                }}
+            />
+            <Drawer.Screen
+                name="BusinessLoanForm"
+                component={BusinessLoanFormScreen}
+                options={{
+                    title: 'Business Loan Application',
+                    headerShown: false,
+                    drawerItemStyle: { display: 'none' }
+                }}
+            />
+            <Drawer.Screen
+                name="EducationLoanForm"
+                component={EducationLoanFormScreen}
+                options={{
+                    title: 'Education Loan Application',
+                    headerShown: false,
+                    drawerItemStyle: { display: 'none' }
+                }}
+            />
+            <Drawer.Screen
+                name="MortgageLoanForm"
+                component={MortgageLoanFormScreen}
+                options={{
+                    title: 'Mortgage Loan Application',
+                    headerShown: false,
+                    drawerItemStyle: { display: 'none' }
+                }}
+            />
+            <Drawer.Screen
+                name="SMELoanForm"
+                component={SMELoanFormScreen}
+                options={{
+                    title: 'SME Loan Application',
+                    headerShown: false,
+                    drawerItemStyle: { display: 'none' }
+                }}
+            />
+            <Drawer.Screen
+                name="NRPLoanForm"
+                component={NRPLoanFormScreen}
+                options={{
+                    title: 'NRP Loan Application',
+                    headerShown: false,
+                    drawerItemStyle: { display: 'none' }
+                }}
+            />
+            <Drawer.Screen
+                name="VehicleLoanForm"
+                component={VehicleLoanFormScreen}
+                options={{
+                    title: 'Vehicle Loan Application',
+                    headerShown: false,
+                    drawerItemStyle: { display: 'none' }
+                }}
+            />
+            <Drawer.Screen
+                name="LoanAgainstSecuritiesForm"
+                component={LoanAgainstSecuritiesFormScreen}
+                options={{
+                    title: 'Loan Against Securities Application',
                     headerShown: false,
                     drawerItemStyle: { display: 'none' }
                 }}

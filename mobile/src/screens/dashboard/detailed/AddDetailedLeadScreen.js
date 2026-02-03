@@ -6,7 +6,8 @@ import {
     TouchableOpacity,
     StyleSheet,
     SafeAreaView,
-    FlatList
+    FlatList,
+    Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { productCards } from '../data/productData';
@@ -30,14 +31,21 @@ export default function AddDetailedLeadScreen() {
     const handleNavigation = (title) => {
         const routes = {
             "Home Loans": "HomeLoanForm",
-            "Personal Loans": "PersonalLoanForm"
+            "Personal Loans": "PersonalLoanForm",
+            "Business Loan": "BusinessLoanForm",
+            "Education Loan": "EducationLoanForm",
+            "Mortgage Loans": "MortgageLoanForm",
+            "SME": "SMELoanForm",
+            "NRP Loan": "NRPLoanForm",
+            "Vehicle Loan": "VehicleLoanForm",
+            "Loan Against Securities / MF": "LoanAgainstSecuritiesForm"
         };
         const route = routes[title];
         if (route) {
             navigation.navigate(route);
         } else {
             console.log("No route for", title);
-            // Optional: Alert.alert("Coming Soon", "This form is under development.");
+            Alert.alert("Coming Soon", "This form is under development.");
         }
     };
 

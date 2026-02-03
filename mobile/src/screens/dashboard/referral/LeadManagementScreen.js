@@ -56,8 +56,8 @@ export default function LeadManagementScreen({ navigation }) {
                     const mapped = response.data.map(item => ({
                         id: item.id,
                         ref_id: item.detail_lead_id,
-                        lead_name: item.form_data?.clientName || item.client?.name || item.name || "N/A",
-                        contact_number: item.form_data?.phone || item.client?.mobile || item.mobile || "N/A",
+                        lead_name:item.lead_name ||  item.form_data?.clientName || item.client?.name || item.name || "N/A",
+                        contact_number:item.contact_number ||  item.form_data?.phone || item.client?.mobile || item.mobile || "N/A",
                         email: item.form_data?.email || item.client?.email || item.email || "-",
                         department: item.department,
                         sub_category: item.sub_category,
